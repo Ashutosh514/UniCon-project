@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* Small component-level responsive helpers for App header */
+/* Desktop shown by default, mobile hidden */
+.desktop-only {
+    display: inline-flex;
+}
+
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 750px) {
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: inline-flex !important;
+    }
+
+    /* make mobile menu full width on very small screens */
+    .mobile-menu {
+        min-width: 200px;
+        max-width: 320px;
+    }
+}
