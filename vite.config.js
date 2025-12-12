@@ -11,7 +11,7 @@ export default defineConfig({
     host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://unicon-project-2.onrender.com',
         changeOrigin: true,
         secure: false,
       },
