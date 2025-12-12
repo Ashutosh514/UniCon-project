@@ -4,7 +4,7 @@
   "description": "Backend for the Skill Exchange application",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "node src/app.js"
   },
   "dependencies": {
     "aws-sdk": "^2.1692.0",
