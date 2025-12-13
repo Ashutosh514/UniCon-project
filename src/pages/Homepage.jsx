@@ -8,7 +8,7 @@ import {
 export default function HomePage() {
   const navigate = useNavigate();
 
-  const API = "https://YOUR_BACKEND_URL.onrender.com";
+  const API = "https://unicon-project-2.onrender.com";
 
   const [stats, setStats] = React.useState({
     studentsCount: 0,
