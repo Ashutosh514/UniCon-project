@@ -1,25 +1,13 @@
-/**
- * Content Moderation Dashboard
- * Layer 7: Admin tools for content review and management
- */
-
 import React, { useState, useEffect } from 'react';
 import {
-    Shield,
-    Eye,
-    Check,
-    X,
-    AlertTriangle,
-    Clock,
-    User,
-    FileImage,
-    BarChart3,
-    Filter,
-    Search,
-    RefreshCw
+    Shield, Eye, Check, X, AlertTriangle, Clock,
+    User, FileImage, BarChart3, Filter, Search, RefreshCw
 } from 'lucide-react';
 
 const ContentModerationDashboard = () => {
+
+    const API = "https://unicon-project-2.onrender.com";
+
     const [content, setContent] = useState([]);
     const [stats, setStats] = useState({});
     const [loading, setLoading] = useState(true);
@@ -33,19 +21,26 @@ const ContentModerationDashboard = () => {
     const [selectedContent, setSelectedContent] = useState(null);
     const [reviewNotes, setReviewNotes] = useState('');
 
-    // Fetch content data
+    // ---------------------- FETCH CONTENT ----------------------
     const fetchContent = async () => {
         try {
             setLoading(true);
-            const queryParams = new URLSearchParams(filters);
-            const response = await fetch(`/api/moderation/pending?${queryParams}`);
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch content');
-            }
+            const token = localStorage.getItem("token");
+            const queryParams = new URLSearchParams(filters);
+
+            const response = await fetch(`${API}/api/moderation/pending?${queryParams}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch content');
 
             const data = await response.json();
-            setContent(data.content);
+            setContent(data.content || []);
+
         } catch (err) {
             setError(err.message);
         } finally {
@@ -53,19 +48,23 @@ const ContentModerationDashboard = () => {
         }
     };
 
-    // Fetch statistics
+    // ---------------------- FETCH STATISTICS ----------------------
     const fetchStats = async () => {
         try {
-            const response = await fetch('/api/moderation/stats');
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API}/api/moderation/stats`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch statistics');
-            }
+            if (!response.ok) throw new Error('Failed to fetch statistics');
 
             const data = await response.json();
             setStats(data);
+
         } catch (err) {
-            console.error('Error fetching stats:', err);
+            console.error("Stats error:", err);
         }
     };
 
@@ -74,15 +73,16 @@ const ContentModerationDashboard = () => {
         fetchStats();
     }, [filters]);
 
-    // Review content action
+    // ---------------------- REVIEW ACTION ----------------------
     const reviewContent = async (reviewId, action) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`/api/moderation/review/${reviewId}`, {
-                method: 'POST',
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(`${API}/api/moderation/review/${reviewId}`, {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     action,
@@ -90,255 +90,172 @@ const ContentModerationDashboard = () => {
                 })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to review content');
-            }
+            if (!response.ok) throw new Error("Failed to review content");
 
-            // Refresh content list
             fetchContent();
             setSelectedContent(null);
-            setReviewNotes('');
+            setReviewNotes("");
+
         } catch (err) {
             setError(err.message);
         }
     };
 
-    // Get risk level color
-    const getRiskColor = (riskLevel) => {
-        switch (riskLevel) {
-            case 'high': return 'text-red-500 bg-red-100';
-            case 'medium': return 'text-yellow-500 bg-yellow-100';
-            case 'low': return 'text-green-500 bg-green-100';
-            default: return 'text-gray-500 bg-gray-100';
-        }
-    };
+    // Helpers
+    const getRiskColor = (risk) =>
+        risk === "high" ? "text-red-500 bg-red-100" :
+            risk === "medium" ? "text-yellow-500 bg-yellow-100" :
+                risk === "low" ? "text-green-500 bg-green-100" :
+                    "text-gray-500 bg-gray-100";
 
-    // Get status color
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'approved': return 'text-green-500 bg-green-100';
-            case 'rejected': return 'text-red-500 bg-red-100';
-            case 'quarantined': return 'text-yellow-500 bg-yellow-100';
-            case 'pending': return 'text-blue-500 bg-blue-100';
-            default: return 'text-gray-500 bg-gray-100';
-        }
-    };
+    const getStatusColor = (status) =>
+        status === "approved" ? "text-green-500 bg-green-100" :
+            status === "rejected" ? "text-red-500 bg-red-100" :
+                status === "quarantined" ? "text-yellow-500 bg-yellow-100" :
+                    status === "pending" ? "text-blue-500 bg-blue-100" :
+                        "text-gray-500 bg-gray-100";
 
-    // Format file size
     const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        if (!bytes) return "0 Bytes";
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        let i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
     };
 
-    // Format date
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleString();
-    };
+    const formatDate = (date) => new Date(date).toLocaleString();
 
+    // ---------------------- UI ----------------------
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                            <Shield className="h-8 w-8 text-blue-600" />
-                            <h1 className="text-3xl font-bold text-gray-900">Content Moderation Dashboard</h1>
-                        </div>
-                        <button
-                            onClick={fetchContent}
-                            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            <RefreshCw className="h-4 w-4" />
-                            <span>Refresh</span>
-                        </button>
+
+                {/* HEADER */}
+                <div className="flex justify-between items-center mb-8">
+                    <div className="flex items-center space-x-3">
+                        <Shield className="h-8 w-8 text-blue-600" />
+                        <h1 className="text-3xl font-bold text-gray-900">Content Moderation Dashboard</h1>
                     </div>
+                    <button
+                        onClick={fetchContent}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+                    </button>
                 </div>
 
-                {/* Statistics Cards */}
+                {/* STAT CARDS */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-lg shadow">
-                        <div className="flex items-center">
-                            <Clock className="h-8 w-8 text-blue-500" />
+                    {[
+                        { icon: Clock, label: "Pending", value: stats.statusStats?.find(s => s._id === "pending")?.count || 0, color: "text-blue-500" },
+                        { icon: Check, label: "Approved", value: stats.statusStats?.find(s => s._id === "approved")?.count || 0, color: "text-green-500" },
+                        { icon: X, label: "Rejected", value: stats.statusStats?.find(s => s._id === "rejected")?.count || 0, color: "text-red-500" },
+                        { icon: AlertTriangle, label: "High Risk", value: stats.riskStats?.find(s => s._id === "high")?.count || 0, color: "text-yellow-500" },
+                    ].map((card, i) => (
+                        <div key={i} className="bg-white p-6 shadow rounded-lg flex items-center">
+                            <card.icon className={`h-8 w-8 ${card.color}`} />
                             <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Pending Review</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {stats.statusStats?.find(s => s._id === 'pending')?.count || 0}
-                                </p>
+                                <p className="text-sm text-gray-500">{card.label}</p>
+                                <p className="text-2xl font-bold">{card.value}</p>
                             </div>
                         </div>
-                    </div>
+                    ))}
+                </div>
 
-                    <div className="bg-white p-6 rounded-lg shadow">
-                        <div className="flex items-center">
-                            <Check className="h-8 w-8 text-green-500" />
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Approved</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {stats.statusStats?.find(s => s._id === 'approved')?.count || 0}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                {/* FILTERS */}
+                <div className="bg-white p-6 shadow rounded-lg mb-6">
+                    <div className="flex gap-4">
+                        <select
+                            value={filters.status}
+                            onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                        >
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="quarantined">Quarantined</option>
+                        </select>
 
-                    <div className="bg-white p-6 rounded-lg shadow">
-                        <div className="flex items-center">
-                            <X className="h-8 w-8 text-red-500" />
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">Rejected</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {stats.statusStats?.find(s => s._id === 'rejected')?.count || 0}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-lg shadow">
-                        <div className="flex items-center">
-                            <AlertTriangle className="h-8 w-8 text-yellow-500" />
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-500">High Risk</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {stats.riskStats?.find(s => s._id === 'high')?.count || 0}
-                                </p>
-                            </div>
-                        </div>
+                        <select
+                            value={filters.riskLevel}
+                            onChange={(e) => setFilters({ ...filters, riskLevel: e.target.value, page: 1 })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                        >
+                            <option value="all">All Risk Levels</option>
+                            <option value="high">High Risk</option>
+                            <option value="medium">Medium Risk</option>
+                            <option value="low">Low Risk</option>
+                        </select>
                     </div>
                 </div>
 
-                {/* Filters */}
-                <div className="bg-white p-6 rounded-lg shadow mb-6">
-                    <div className="flex flex-wrap gap-4">
-                        <div className="flex items-center space-x-2">
-                            <Filter className="h-4 w-4 text-gray-500" />
-                            <select
-                                value={filters.status}
-                                onChange={(e) => setFilters({ ...filters, status: e.target.value, page: 1 })}
-                                className="border border-gray-300 rounded-md px-3 py-2"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="pending">Pending</option>
-                                <option value="quarantined">Quarantined</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <select
-                                value={filters.riskLevel}
-                                onChange={(e) => setFilters({ ...filters, riskLevel: e.target.value, page: 1 })}
-                                className="border border-gray-300 rounded-md px-3 py-2"
-                            >
-                                <option value="all">All Risk Levels</option>
-                                <option value="high">High Risk</option>
-                                <option value="medium">Medium Risk</option>
-                                <option value="low">Low Risk</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Content List */}
+                {/* CONTENT LIST */}
                 <div className="bg-white rounded-lg shadow">
-                    <div className="px-6 py-4 border-b border-gray-200">
-                        <h2 className="text-lg font-semibold text-gray-900">Content Review Queue</h2>
+                    <div className="border-b px-6 py-4">
+                        <h2 className="text-lg font-semibold">Content Review Queue</h2>
                     </div>
 
+                    {/* LOADING */}
                     {loading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <RefreshCw className="h-8 w-8 animate-spin text-blue-500" />
-                            <span className="ml-2 text-gray-500">Loading content...</span>
+                        <div className="flex justify-center py-12 text-gray-500">
+                            <RefreshCw className="animate-spin h-8 w-8" /> Loading...
                         </div>
                     ) : error ? (
-                        <div className="flex items-center justify-center py-12">
-                            <AlertTriangle className="h-8 w-8 text-red-500" />
-                            <span className="ml-2 text-red-500">{error}</span>
-                        </div>
+                        <div className="flex justify-center py-12 text-red-500">{error}</div>
                     ) : content.length === 0 ? (
-                        <div className="flex items-center justify-center py-12">
-                            <Check className="h-8 w-8 text-green-500" />
-                            <span className="ml-2 text-gray-500">No content pending review</span>
-                        </div>
+                        <div className="flex justify-center py-12 text-gray-500">No content pending review</div>
                     ) : (
-                        <div className="divide-y divide-gray-200">
+                        <div className="divide-y">
                             {content.map((item) => (
                                 <div key={item._id} className="p-6 hover:bg-gray-50">
                                     <div className="flex items-start space-x-4">
-                                        {/* File Preview */}
-                                        <div className="flex-shrink-0">
-                                            {item.fileType === 'image' ? (
-                                                <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                                                    <FileImage className="h-8 w-8 text-gray-400" />
-                                                </div>
-                                            ) : (
-                                                <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                                                    <FileImage className="h-8 w-8 text-gray-400" />
-                                                </div>
-                                            )}
+                                        
+                                        {/* Thumbnail */}
+                                        <div className="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">
+                                            <FileImage className="h-8 w-8 text-gray-400" />
                                         </div>
 
-                                        {/* Content Info */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between">
-                                                <h3 className="text-lg font-medium text-gray-900 truncate">
-                                                    {item.originalFileName}
-                                                </h3>
-                                                <div className="flex items-center space-x-2">
-                                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}>
-                                                        {item.status}
-                                                    </span>
-                                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getRiskColor(item.moderationResults?.riskAssessment?.overallRisk)}`}>
-                                                        {item.moderationResults?.riskAssessment?.overallRisk || 'unknown'} risk
-                                                    </span>
-                                                </div>
+                                        {/* DETAILS */}
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-medium">{item.originalFileName}</h3>
+
+                                            <div className="flex gap-2 mt-2">
+                                                <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(item.status)}`}>
+                                                    {item.status}
+                                                </span>
+                                                <span className={`px-2 py-1 rounded-full text-xs ${getRiskColor(item.moderationResults?.riskAssessment?.overallRisk)}`}>
+                                                    {item.moderationResults?.riskAssessment?.overallRisk || "Unknown"} risk
+                                                </span>
                                             </div>
 
-                                            <div className="mt-2 text-sm text-gray-500">
-                                                <p>Uploaded by: {item.uploadedBy?.fullName || 'Unknown'}</p>
-                                                <p>Size: {formatFileSize(item.fileSize)} • {formatDate(item.createdAt)}</p>
-                                                {item.moderationResults?.aiAnalysis?.overallNsfwScore && (
-                                                    <p>NSFW Score: {(item.moderationResults.aiAnalysis.overallNsfwScore * 100).toFixed(1)}%</p>
-                                                )}
-                                            </div>
-
-                                            {/* Risk Factors */}
-                                            {item.moderationResults?.riskAssessment?.factors?.length > 0 && (
-                                                <div className="mt-2">
-                                                    <p className="text-sm font-medium text-gray-700">Risk Factors:</p>
-                                                    <ul className="text-sm text-gray-500 list-disc list-inside">
-                                                        {item.moderationResults.riskAssessment.factors.map((factor, index) => (
-                                                            <li key={index}>{factor}</li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
+                                            <p className="text-sm text-gray-500 mt-2">
+                                                Uploaded by: {item.uploadedBy?.fullName || "Unknown"} •{" "}
+                                                {formatFileSize(item.fileSize)} • {formatDate(item.createdAt)}
+                                            </p>
                                         </div>
 
-                                        {/* Actions */}
-                                        <div className="flex-shrink-0 flex space-x-2">
+                                        {/* ACTIONS */}
+                                        <div className="flex flex-shrink-0 gap-2">
                                             <button
                                                 onClick={() => setSelectedContent(item)}
-                                                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                                className="px-3 py-1 bg-blue-600 text-white rounded"
                                             >
                                                 <Eye className="h-4 w-4" />
                                             </button>
                                             <button
-                                                onClick={() => reviewContent(item._id, 'approve')}
-                                                className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                                onClick={() => reviewContent(item._id, "approve")}
+                                                className="px-3 py-1 bg-green-600 text-white rounded"
                                             >
                                                 <Check className="h-4 w-4" />
                                             </button>
                                             <button
-                                                onClick={() => reviewContent(item._id, 'reject')}
-                                                className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                                                onClick={() => reviewContent(item._id, "reject")}
+                                                className="px-3 py-1 bg-red-600 text-white rounded"
                                             >
                                                 <X className="h-4 w-4" />
                                             </button>
                                         </div>
+
                                     </div>
                                 </div>
                             ))}
@@ -346,119 +263,81 @@ const ContentModerationDashboard = () => {
                     )}
                 </div>
 
-                {/* Content Review Modal */}
+                {/* MODAL */}
                 {selectedContent && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                            <div className="p-6 border-b border-gray-200">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-xl font-semibold text-gray-900">Content Review</h2>
-                                    <button
-                                        onClick={() => setSelectedContent(null)}
-                                        className="text-gray-400 hover:text-gray-600"
-                                    >
-                                        <X className="h-6 w-6" />
-                                    </button>
-                                </div>
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg max-w-4xl w-full p-6">
+
+                            {/* Header */}
+                            <div className="flex justify-between items-center border-b pb-4 mb-4">
+                                <h2 className="text-xl font-semibold">Review Content</h2>
+                                <button onClick={() => setSelectedContent(null)}>
+                                    <X className="h-6 w-6 text-gray-500" />
+                                </button>
                             </div>
 
-                            <div className="p-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* File Preview */}
-                                    <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4">File Preview</h3>
-                                        <div className="border border-gray-200 rounded-lg p-4">
-                                            {selectedContent.fileType === 'image' ? (
-                                                <div className="text-center">
-                                                    <FileImage className="h-32 w-32 mx-auto text-gray-400" />
-                                                    <p className="mt-2 text-sm text-gray-500">Image preview not available</p>
-                                                </div>
-                                            ) : (
-                                                <div className="text-center">
-                                                    <FileImage className="h-32 w-32 mx-auto text-gray-400" />
-                                                    <p className="mt-2 text-sm text-gray-500">Video preview not available</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                            {/* Modal Content */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                                    {/* Moderation Details */}
-                                    <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Moderation Details</h3>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-700">File Information</p>
-                                                <p className="text-sm text-gray-500">
-                                                    {selectedContent.originalFileName} • {formatFileSize(selectedContent.fileSize)}
-                                                </p>
-                                            </div>
-
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-700">Risk Assessment</p>
-                                                <p className="text-sm text-gray-500">
-                                                    {selectedContent.moderationResults?.riskAssessment?.overallRisk || 'Unknown'} risk
-                                                </p>
-                                            </div>
-
-                                            {selectedContent.moderationResults?.aiAnalysis?.overallNsfwScore && (
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-700">NSFW Score</p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {(selectedContent.moderationResults.aiAnalysis.overallNsfwScore * 100).toFixed(1)}%
-                                                    </p>
-                                                </div>
-                                            )}
-
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-700">Review Notes</p>
-                                                <textarea
-                                                    value={reviewNotes}
-                                                    onChange={(e) => setReviewNotes(e.target.value)}
-                                                    className="w-full mt-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
-                                                    rows={3}
-                                                    placeholder="Add review notes..."
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                {/* File Details */}
+                                <div>
+                                    <h3 className="font-medium text-lg mb-2">File Information</h3>
+                                    <p>{selectedContent.originalFileName}</p>
+                                    <p className="text-sm text-gray-500">{formatFileSize(selectedContent.fileSize)}</p>
                                 </div>
 
-                                {/* Action Buttons */}
-                                <div className="mt-6 flex justify-end space-x-3">
-                                    <button
-                                        onClick={() => setSelectedContent(null)}
-                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={() => reviewContent(selectedContent._id, 'reject')}
-                                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
-                                    >
-                                        Reject
-                                    </button>
-                                    <button
-                                        onClick={() => reviewContent(selectedContent._id, 'quarantine')}
-                                        className="px-4 py-2 text-sm font-medium text-white bg-yellow-600 rounded-md hover:bg-yellow-700 transition-colors"
-                                    >
-                                        Quarantine
-                                    </button>
-                                    <button
-                                        onClick={() => reviewContent(selectedContent._id, 'approve')}
-                                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
-                                    >
-                                        Approve
-                                    </button>
+                                {/* Review Notes */}
+                                <div>
+                                    <h3 className="font-medium text-lg mb-2">Review Notes</h3>
+                                    <textarea
+                                        value={reviewNotes}
+                                        onChange={(e) => setReviewNotes(e.target.value)}
+                                        className="w-full border rounded p-2 text-sm"
+                                        rows={4}
+                                        placeholder="Add notes for reviewer..."
+                                    />
                                 </div>
+
                             </div>
+
+                            {/* Footer Buttons */}
+                            <div className="flex justify-end space-x-3 mt-6">
+                                <button
+                                    className="px-4 py-2 bg-gray-200 rounded"
+                                    onClick={() => setSelectedContent(null)}
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    className="px-4 py-2 bg-red-600 text-white rounded"
+                                    onClick={() => reviewContent(selectedContent._id, "reject")}
+                                >
+                                    Reject
+                                </button>
+
+                                <button
+                                    className="px-4 py-2 bg-yellow-600 text-white rounded"
+                                    onClick={() => reviewContent(selectedContent._id, "quarantine")}
+                                >
+                                    Quarantine
+                                </button>
+
+                                <button
+                                    className="px-4 py-2 bg-green-600 text-white rounded"
+                                    onClick={() => reviewContent(selectedContent._id, "approve")}
+                                >
+                                    Approve
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 )}
+
             </div>
         </div>
     );
 };
 
 export default ContentModerationDashboard;
-
-
