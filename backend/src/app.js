@@ -41,8 +41,7 @@ const app = express();
 
 // ✅ Setup CORS properly after app is defined
 app.use(cors({
-    origin: 'http://localhost:5173', // Adjust this to your frontend URL
-    credentials: true
+    origin: "*" // Adjust this to your frontend URL
 }));
 
 // ✅ Load environment variables
