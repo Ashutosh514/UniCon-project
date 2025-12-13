@@ -41,7 +41,9 @@ const app = express();
 
 // ✅ Setup CORS properly after app is defined
 app.use(cors({
-    origin: "*" // Adjust this to your frontend URL
+    origin: "*",// Adjust this to your frontend URL
+    allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE"]
 }));
 
 // ✅ Load environment variables
