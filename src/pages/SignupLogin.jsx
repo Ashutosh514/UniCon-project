@@ -176,7 +176,7 @@ export default function SignupLogin() {
       return;
     }
 
-    const authEndpoint = isLogin ? '${API}/api/auth/login' : '${API}/api/auth/register';
+    const authEndpoint = isLogin ? `${API}/api/auth/login` : `${API}/api/auth/register`;
     const body = isLogin
       ? { email, password }
       : { fullName, email, password, role };
