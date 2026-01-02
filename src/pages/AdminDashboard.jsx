@@ -22,7 +22,7 @@ const API = "https://unicon-project-2.onrender.com";
         setError(null);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('${API}/api/moderation/pending', { headers: { Authorization: `Bearer ${token}` } });
+            const res = await fetch(`${API}/api/moderation/pending`, { headers: { Authorization: `Bearer ${token}` } });
             if (!res.ok) throw new Error('Failed to fetch pending items');
             const data = await res.json();
             setItems(data.content || []);
@@ -37,7 +37,7 @@ const API = "https://unicon-project-2.onrender.com";
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('${API}/api/postreviews/pending', { headers: { Authorization: `Bearer ${token}` } });
+            const res = await fetch(`${API}/api/postreviews/pending`, { headers: { Authorization: `Bearer ${token}` } });
             if (!res.ok) throw new Error('Failed to fetch pending posts');
             const data = await res.json();
             setPosts(data.reviews || []);
