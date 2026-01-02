@@ -337,14 +337,14 @@ const SkillExchange = () => {
                 type="button"
                 onClick={() => setIsPostModalOpen(false)}
                 className="rounded-xl px-6 py-3 font-semibold text-gray-300 transition-colors hover:bg-gray-700"
-                disabled={isSubmitting}
+                
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
-                disabled={isSubmitting || !contentPolicyAccepted}
+      
               >
                 {isSubmitting ? 'Posting...' : 'Post Skill'}
               </button>
