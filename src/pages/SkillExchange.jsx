@@ -37,7 +37,7 @@ const SkillExchange = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('${API}/api/skills');
+      const response = await fetch(`${API}/api/skills`);
       if (!response.ok) {
         throw new Error('Failed to fetch skills from the backend');
       }
@@ -204,7 +204,7 @@ const SkillExchange = () => {
       }
 
       try {
-        const response = await fetch('${API}/api/skills', {
+        const response = await fetch(`${API}/api/skills`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
