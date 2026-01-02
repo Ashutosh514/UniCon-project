@@ -13,7 +13,7 @@ const API = "https://unicon-project-2.onrender.com";
 
   const fetchStats = async () => {
     try {
-      const res = await fetch('${API}/api/stats');
+      const res = await fetch(`${API}/api/stats`);
       if (!res.ok) return;
       const data = await res.json();
       setStats({ studentsCount: data.studentsCount || 0, solutionsShared: data.solutionsShared || 0, itemsFound: data.itemsFound || 0 });
@@ -30,10 +30,10 @@ const API = "https://unicon-project-2.onrender.com";
   const fetchRecentActivity = async () => {
     try {
       const [lostRes, resourcesRes, questionsRes, skillsRes] = await Promise.all([
-        fetch('${API}/api/lostitems'),
-        fetch('${API}/api/resources'),
-        fetch('${API}/api/questions'),
-        fetch('${API}/api/skills')
+        fetch(`${API}/api/lostitems`),
+        fetch(`${API}/api/resources`),
+        fetch(`${API}/api/questions`),
+        fetch(`${API}/api/skills`)
       ]);
 
       const [lostItems, resources, questionsData, skills] = await Promise.all([
