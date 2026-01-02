@@ -51,7 +51,7 @@ const API = "https://unicon-project-2.onrender.com";
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('${API}/api/resources');
+      const response = await fetch(`${API}/api/resources`);
       if (!response.ok) {
         throw new Error('Failed to fetch resources from the backend');
       }
@@ -178,7 +178,7 @@ const API = "https://unicon-project-2.onrender.com";
       }
 
       try {
-        const response = await fetch('${API}/api/resources', {
+        const response = await fetch(`${API}/api/resources`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
