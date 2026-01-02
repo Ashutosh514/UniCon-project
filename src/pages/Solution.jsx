@@ -281,7 +281,7 @@ export default function Solution() {
         return;
       }
 
-      const response = await fetch('${API}/api/questions', {
+      const response = await fetch(`${API}/api/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
