@@ -116,7 +116,7 @@ export default function SignupLogin() {
     if (!response || !response.credential) return;
     setLoading(true);
     try {
-      const res = await fetch('${API}/api/auth/google/callback', {
+      const res = await fetch(`${API}/api/auth/google/callback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_token: response.credential }),
