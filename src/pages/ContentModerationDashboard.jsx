@@ -54,7 +54,7 @@ const ContentModerationDashboard = () => {
     // Fetch statistics
     const fetchStats = async () => {
         try {
-            const response = await fetch('${API}/api/moderation/stats');
+            const response = await fetch(`${API}/api/moderation/stats`);
 
             if (!response.ok) {
                 throw new Error('Failed to fetch statistics');
