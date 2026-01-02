@@ -47,7 +47,7 @@ const LostAndFound = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('${API}/api/lostitems');
+      const response = await fetch(`${API}/api/lostitems`);
       if (!response.ok) {
         throw new Error('Failed to fetch lost and found items');
       }
@@ -145,7 +145,7 @@ const LostAndFound = () => {
       }
 
       try {
-        const response = await fetch('${API}/api/lostitems', {
+        const response = await fetch(`${API}/api/lostitems`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
