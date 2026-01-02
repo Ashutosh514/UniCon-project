@@ -60,10 +60,10 @@ const AppHeader = () => {
   const pollNotifications = async () => {
     try {
       const endpoints = [
-        { key: 'skills', url: '${API_BASE}/api/skills' },
-        { key: 'lostitems', url: '${API_BASE}/api/lostitems' },
-        { key: 'resources', url: '${API_BASE}/api/resources' },
-        { key: 'questions', url: '{API_BASE}/api/questions' }
+        { key: 'skills', url: `${API_BASE}/api/skills` },
+        { key: 'lostitems', url: `${API_BASE}/api/lostitems` },
+        { key: 'resources', url: `${API_BASE}/api/resources` },
+        { key: 'questions', url: `${API_BASE}/api/questions` }
       ];
 
       const results = await Promise.all(endpoints.map(e => fetch(e.url).then(r => r.ok ? r.json().catch(() => []) : []).catch(() => [])));
