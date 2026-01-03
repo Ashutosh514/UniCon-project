@@ -11,6 +11,7 @@ export const useAuth = () => {
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState('');
   const [userId, setUserId] = useState(''); // Also store userId in context
@@ -105,6 +106,8 @@ export const AuthProvider = ({ children }) => {
 
     // initial check
     checkTokenState();
+    // mark that initial auth check is complete
+    setAuthReady(true);
 
     // Listen for storage changes to keep state in sync across tabs/windows
     const handleStorageChange = () => {
@@ -145,6 +148,7 @@ export const AuthProvider = ({ children }) => {
   // Value provided by the context
   const authContextValue = {
     isLoggedIn,
+    authReady,
     userName,
     userRole,
     userId,
