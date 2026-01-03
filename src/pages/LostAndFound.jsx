@@ -269,6 +269,20 @@ const LostAndFound = () => {
     );
   };
 
+
+   const getImageSrc = (img) => {
+    if (!img) return null;
+    // If already absolute URL, return as-is
+    if (/^https?:\/\//i.test(img)) return img;
+    // If starts with a leading slash (e.g., '/uploads/...'), prefix API
+    if (img.startsWith('/')) return `${API}${img}`;
+    // If starts with uploads/ (without leading slash), prefix API too
+    if (img.startsWith('uploads/')) return `${API}/${img}`;
+    // Otherwise return as-is
+    return img;
+  };
+  
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       {/* Header Section */}
@@ -336,7 +350,7 @@ const LostAndFound = () => {
                 <div className="relative h-48 w-full bg-gray-100 flex items-center justify-center overflow-hidden">
                   {item.image || item.image_url ? (
                     <img
-                      src={item.image ? item.image : item.image_url}
+                      src={getImageSrc(item.image ? item.image : item.image_url)}
                       alt={item.title || item.item_name}
                       className="w-full h-full object-cover"
                       onError={(e) => { e.target.onerror = null; e.target.src = `https://placehold.co/400x200/e2e8f0/64748b?text=Item+Image` }}
