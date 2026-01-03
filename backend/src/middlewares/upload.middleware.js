@@ -1,36 +1,38 @@
-    const multer = require('multer');
-    const path = require('path');
+const fs = require("fs");
+const multer = require("multer");
+const path = require("path");
 
-    // Configure storage for uploaded files
-    const storage = multer.diskStorage({
-        destination: (req, file, cb) => {
-            // Set the destination folder for uploads
-            // Make sure this 'uploads' folder exists in your backend root directory
-            cb(null, 'uploads/');
-        },
-        filename: (req, file, cb) => {
-            // Create a unique filename for the uploaded file
-            cb(null, Date.now() + '-' + file.originalname);
-        },
-    });
+// ✅ SINGLE, ABSOLUTE uploads path
+const uploadDir = path.join(process.cwd(), "uploads");
 
-    // Filter to accept only image files
-    const fileFilter = (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only image files are allowed!'), false);
-        }
-    };
+// ✅ Ensure uploads folder exists (CRITICAL)
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
-    // Initialize multer with storage and file filter
-    const upload = multer({
-        storage: storage,
-        fileFilter: fileFilter,
-        limits: {
-            fileSize: 5 * 1024 * 1024, // 5 MB file size limit
-        },
-    });
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir); // ✅ SAME path everywhere
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    },
+});
 
-    module.exports = upload;
-    
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only image files are allowed!"), false);
+    }
+};
+
+const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+    },
+});
+
+module.exports = upload;
