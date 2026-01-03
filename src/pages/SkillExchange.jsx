@@ -236,7 +236,7 @@ const SkillExchange = () => {
         <div className="relative w-full max-w-2xl overflow-y-auto rounded-3xl bg-gray-800 p-8 shadow-2xl max-h-[90vh] text-white">
           <div className="flex items-center justify-between pb-6 border-b border-gray-700">
             <h2 className="text-3xl font-extrabold text-white">Post a New Skill</h2>
-            <button onClick={() => setIsPostModalOpen(false)} className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white">
+            <button type="button" onClick={() => setIsPostModalOpen(false)} className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white">
               <X className="h-6 w-6" />
             </button>
           </div>
@@ -591,6 +591,7 @@ const SkillExchange = () => {
                 <h2 className="text-3xl font-extrabold text-white">Content Policy</h2>
               </div>
               <button
+                type="button"
                 onClick={() => setShowContentPolicy(false)}
                 className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
               >
@@ -621,6 +622,7 @@ const SkillExchange = () => {
 
               <div className="flex justify-end">
                 <button
+                  type="button"
                   onClick={() => {
                     setShowContentPolicy(false);
                     setContentPolicyAccepted(true);
