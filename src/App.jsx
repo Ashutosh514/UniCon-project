@@ -15,21 +15,22 @@ import Solution from './pages/Solution';
 import AdminDashboard from './pages/AdminDashboard';
 
 
-const API_BASE = "https://unicon-project-2.onrender.com";
+const API = "https://unicon-project-2.onrender.com";
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, authReady } = useAuth();
   const navigate = useNavigate();
   const { pathname } = window.location ? { pathname: window.location.pathname } : { pathname: '/' };
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (authReady && !isLoggedIn) {
       // send user to auth page and include where they wanted to go
       navigate('/auth', { replace: true, state: { from: pathname } });
     }
-  }, [isLoggedIn, navigate, pathname]);
+  }, [authReady, isLoggedIn, navigate, pathname]);
 
+  if (!authReady) return null;
   return isLoggedIn ? children : null;
 };
 
@@ -60,10 +61,10 @@ const AppHeader = () => {
   const pollNotifications = async () => {
     try {
       const endpoints = [
-        { key: 'skills', url: `${API_BASE}/api/skills` },
-        { key: 'lostitems', url: `${API_BASE}/api/lostitems` },
-        { key: 'resources', url: `${API_BASE}/api/resources` },
-        { key: 'questions', url: `${API_BASE}/api/questions` }
+        { key: 'skills', url: `${API}/api/skills` },
+        { key: 'lostitems', url: `${API}/api/lostitems` },
+        { key: 'resources', url: `${API}/api/resources` },
+        { key: 'questions', url: `${API}/api/questions` }
       ];
 
       const results = await Promise.all(endpoints.map(e => fetch(e.url).then(r => r.ok ? r.json().catch(() => []) : []).catch(() => [])));
