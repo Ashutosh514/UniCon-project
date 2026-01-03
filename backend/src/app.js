@@ -68,8 +68,13 @@ connectDB();
 app.use(express.json());
 
 // Serve static files from uploads directory
-const uploadsPath = path.join(__dirname, '..', 'uploads');
-console.log('Static files will be served from:', uploadsPath);
+const fs = require("fs");
+
+const uploadsPath = path.join(process.cwd(), "uploads");
+
+if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+}
 app.use('/uploads', express.static(uploadsPath));
 
 // ✅ Routes
