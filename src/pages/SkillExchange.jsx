@@ -243,6 +243,22 @@ const contentPolicyRef = useRef(false);
             </button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-6 pt-6">
+
+            {/* Content Policy Agreement */} 
+         <div className="border-t border-gray-700 pt-4"> 
+           <div className="flex items-start space-x-3"> 
+             <input type="checkbox" id="contentPolicy" checked={contentPolicyAccepted} 
+               onChange={(e) => setContentPolicyAccepted(e.target.checked)} 
+               className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" required /> 
+             <div className="flex-1"> <label htmlFor="contentPolicy" className="text-sm text-gray-300"> 
+               I agree to the{' '} <button type="button" onClick={() => setShowContentPolicy(true)} 
+                className="text-blue-400 hover:text-blue-300 underline" > 
+                 Content Policy </button> {' '}and confirm that my upload is appropriate for educational content sharing. 
+             </label> 
+             </div> 
+           </div> 
+         </div>
+            
             <div>
               <label className="mb-2 block text-sm font-semibold text-gray-300">Skill Title <span className="text-red-400">*</span></label>
               <input
@@ -333,20 +349,6 @@ const contentPolicyRef = useRef(false);
               </div>
             </div>
 
-            {/* Content Policy Agreement */} 
-         <div className="border-t border-gray-700 pt-4"> 
-           <div className="flex items-start space-x-3"> 
-             <input type="checkbox" id="contentPolicy" checked={contentPolicyAccepted} 
-               onChange={(e) => setContentPolicyAccepted(e.target.checked)} 
-               className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" required /> 
-             <div className="flex-1"> <label htmlFor="contentPolicy" className="text-sm text-gray-300"> 
-               I agree to the{' '} <button type="button" onClick={() => setShowContentPolicy(true)} 
-                className="text-blue-400 hover:text-blue-300 underline" > 
-                 Content Policy </button> {' '}and confirm that my upload is appropriate for educational content sharing. 
-             </label> 
-             </div> 
-           </div> 
-         </div>
 
             <div className="flex justify-end gap-4 pt-4">
               <button
