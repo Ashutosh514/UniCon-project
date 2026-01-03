@@ -6,6 +6,43 @@
 const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
+const path = require('path');
+
+// Normalize an incoming image path to an absolute filesystem path
+const resolveFsPath = (imagePath) => {
+    if (!imagePath) throw new Error('No image path provided');
+
+    // Base uploads folder in backend (this module lives in backend/src/services)
+    const baseUploads = path.join(__dirname, '..', '..', 'uploads');
+
+    // Strip any leading slashes and normalize
+    const trimmed = imagePath.replace(/^[/\\]+/, '');
+
+    // If the path refers to the uploads folder (e.g., '/uploads/...' or 'uploads/...'),
+    // resolve it relative to the backend uploads directory to avoid treating it as
+    // an absolute root path on the server filesystem.
+    if (trimmed === 'uploads' || trimmed.startsWith('uploads' + path.sep) || trimmed.startsWith('uploads/')) {
+        const candidate = path.join(baseUploads, trimmed.replace(/^uploads[\\/]/, ''));
+        if (!fs.existsSync(candidate)) {
+            throw new Error(`File not found: ${candidate}`);
+        }
+        return candidate;
+    }
+
+    // If an absolute path was explicitly provided (and it's not an uploads URL-like path), use it
+    if (path.isAbsolute(imagePath)) {
+        if (!fs.existsSync(imagePath)) throw new Error(`File not found: ${imagePath}`);
+        return imagePath;
+    }
+
+    // Otherwise, treat the path as relative to the uploads directory
+    const candidate = path.join(baseUploads, trimmed);
+    if (!fs.existsSync(candidate)) {
+        throw new Error(`File not found: ${candidate}`);
+    }
+
+    return candidate;
+};
 
 // Configuration for different AI moderation services
 const AI_SERVICES = {
@@ -48,7 +85,8 @@ const AI_SERVICES = {
 const analyzeWithHuggingFace = async (imagePath) => {
     try {
         const formData = new FormData();
-        formData.append('file', fs.createReadStream(imagePath));
+        const fsPath = resolveFsPath(imagePath);
+        formData.append('file', fs.createReadStream(fsPath));
 
         const response = await axios.post(
             'https://api-inference.huggingface.co/models/facebook/detr-resnet-50',
@@ -84,7 +122,8 @@ const analyzeWithHuggingFace = async (imagePath) => {
  */
 const analyzeWithGoogleVision = async (imagePath) => {
     try {
-        const imageBuffer = fs.readFileSync(imagePath);
+        const fsPath = resolveFsPath(imagePath);
+        const imageBuffer = fs.readFileSync(fsPath);
         const base64Image = imageBuffer.toString('base64');
 
         const response = await axios.post(
@@ -173,7 +212,8 @@ const analyzeWithAWSRekognition = async (imagePath) => {
             region: AI_SERVICES.AWS_REKOGNITION.region
         });
 
-        const imageBuffer = fs.readFileSync(imagePath);
+        const fsPath = resolveFsPath(imagePath);
+        const imageBuffer = fs.readFileSync(fsPath);
 
         const params = {
             Image: { Bytes: imageBuffer },
@@ -224,7 +264,8 @@ const analyzeWithLocalModel = async (imagePath) => {
         // This would integrate with a local NSFW detection model
         // For now, we'll use a simple heuristic approach
 
-        const imageBuffer = fs.readFileSync(imagePath);
+        const fsPath = resolveFsPath(imagePath);
+        const imageBuffer = fs.readFileSync(fsPath);
         const fileSize = imageBuffer.length;
 
         // Simple heuristics (not very accurate, but better than nothing)
