@@ -14,6 +14,42 @@ const getPendingPosts = async (req, res) => {
     }
 };
 
+// Get pending post reviews with pagination (for moderation dashboard)
+const getPendingPostsWithPagination = async (req, res) => {
+    try {
+        const { page = 1, limit = 20, type = 'all' } = req.query;
+        const skip = (page - 1) * limit;
+
+        let query = { status: 'pending' };
+
+        if (type !== 'all') {
+            query.type = type;
+        }
+
+        const reviews = await PostReview.find(query)
+            .populate('uploadedBy', 'fullName email')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await PostReview.countDocuments(query);
+
+        res.json({
+            reviews,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(total / limit),
+                totalItems: total,
+                hasNext: skip + reviews.length < total,
+                hasPrev: page > 1
+            }
+        });
+    } catch (err) {
+        console.error('Error fetching pending posts:', err);
+        res.status(500).json({ message: 'Failed to fetch pending posts' });
+    }
+};
+
 // Review a post (approve/reject)
 const reviewPost = async (req, res) => {
     try {
@@ -60,4 +96,4 @@ const reviewPost = async (req, res) => {
     }
 };
 
-module.exports = { getPendingPosts, reviewPost };
+module.exports = { getPendingPosts, reviewPost, getPendingPostsWithPagination };
